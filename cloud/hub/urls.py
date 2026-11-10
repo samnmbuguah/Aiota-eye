@@ -8,58 +8,154 @@ from django.views.decorators.csrf import csrf_exempt
 from app.api.endpoints import api
 from app.core.models import Organization, OrganizationMember, Camera, DetectionEvent
 
-LOGIN_HTML = """<!DOCTYPE html>
+FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="#0b1329"/>
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="none" stroke="#1e293b" stroke-width="1"/>
+  <path d="M16 8C9 8 4 16 4 16s5 8 12 8 12-8 12-8-5-8-12-8z" fill="none" stroke="url(#g)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="16" cy="16" r="4.5" fill="#0284c7"/>
+  <circle cx="16" cy="16" r="2" fill="#f8fafc"/>
+  <circle cx="17.2" cy="14.8" r="1" fill="#ffffff"/>
+</svg>"""
+
+LOGIN_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-950">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Aiota Video Intelligence</title>
+  <title>Aiota | Intelligent Video Surveillance</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
 </head>
-<body class="h-full bg-[#070b14] flex items-center justify-center p-4 antialiased text-slate-100">
-  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-    <div class="p-8 border-b border-slate-800 bg-slate-950/40 text-center">
-      <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-2xl border border-sky-500/30 mx-auto mb-3 shadow-inner">
-        <i class="fa-solid fa-eye"></i>
+<body class="h-full bg-[#060a12] flex items-center justify-center p-4 sm:p-6 text-slate-100 antialiased relative overflow-hidden select-none">
+  <!-- Subtle Ambient Glows -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="w-full max-w-[420px] relative z-10">
+    <!-- Card Container -->
+    <div class="bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden">
+      
+      <!-- Top Brand Header -->
+      <div class="px-8 pt-8 pb-6 text-center border-b border-slate-800/60 bg-slate-950/40">
+        <!-- Brand Logo Icon -->
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400/20 to-sky-600/10 border border-sky-400/30 text-sky-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-sky-500/10">
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+
+        <div class="flex items-center justify-center space-x-2">
+          <span class="text-xl font-extrabold tracking-wider text-white">AIOTA</span>
+          <span class="text-[10px] font-bold tracking-widest text-sky-400 bg-sky-950/80 border border-sky-800/60 px-2 py-0.5 rounded uppercase">Enterprise</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1.5 font-medium">Remote Video Intelligence & Security Platform</p>
       </div>
-      <h1 class="text-xl font-black tracking-wider text-white">AIOTA ENTERPRISE</h1>
-      <p class="text-xs text-slate-400 mt-1 font-medium">Kenya Video Intelligence & Security Platform</p>
+
+      <!-- Login Form -->
+      <form method="POST" action="/login" class="p-8 space-y-4">
+        <!-- Error Alert (shown on failure) -->
+        {ERROR_MESSAGE_BLOCK}
+
+        <!-- Username / Email Field -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">Username or Email</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <i class="fa-solid fa-user text-xs"></i>
+            </span>
+            <input type="text" name="username" required autocomplete="username" placeholder="admin" value="admin"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition shadow-inner font-medium" />
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300">Password</label>
+            <span class="text-[10px] text-slate-500 font-medium">Case-sensitive</span>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <i class="fa-solid fa-lock text-xs"></i>
+            </span>
+            <input type="password" id="passInput" name="password" required autocomplete="current-password" placeholder="••••••••" value="Admin@Akilinova2026!"
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition shadow-inner font-medium" />
+            <button type="button" onclick="togglePassVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition">
+              <i id="passIcon" class="fa-solid fa-eye-slash text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-sky-600/25 flex items-center justify-center space-x-2 active:scale-[0.99]">
+            <span>Sign In to Dashboard</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Demo Credentials Pill (Clean & legible) -->
+        <div class="mt-4 pt-4 border-t border-slate-800/80 bg-slate-950/60 rounded-xl p-3 border border-slate-800/50">
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+            <span class="font-semibold text-slate-300 flex items-center">
+              <i class="fa-solid fa-key mr-1.5 text-sky-400"></i>Preloaded Demo Account:
+            </span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40 font-mono">OWNER</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono mt-1 text-slate-300 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+            <div>
+              <span class="text-[10px] text-slate-500 block">User:</span>
+              <strong class="text-white select-all">admin</strong>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 block">Pass:</span>
+              <strong class="text-sky-300 select-all">Admin@Akilinova2026!</strong>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
-    <form method="POST" action="/login" class="p-8 space-y-4">
-      <div id="errorBox" class="hidden bg-red-950/80 border border-red-800/80 text-red-200 text-xs p-3 rounded-xl"></div>
-
-      <div>
-        <label class="block text-xs font-bold uppercase text-slate-400 mb-1.5">Username / Email</label>
-        <div class="relative">
-          <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
-          <input type="text" name="username" required placeholder="admin" value="admin"
-            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition" />
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold uppercase text-slate-400 mb-1.5">Password</label>
-        <div class="relative">
-          <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
-          <input type="password" name="password" required placeholder="••••••••" value="Admin@Akilinova2026!"
-            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition" />
-        </div>
-      </div>
-
-      <div class="pt-2">
-        <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-sky-600/25 flex items-center justify-center space-x-2">
-          <span>Sign In to Platform</span>
-          <i class="fa-solid fa-arrow-right text-xs"></i>
-        </button>
-      </div>
-
-      <div class="text-center pt-2">
-        <span class="text-[11px] text-slate-500">Default demo: <strong class="text-slate-400 font-mono">admin</strong> / <strong class="text-slate-400 font-mono">Admin@Akilinova2026!</strong></span>
-      </div>
-    </form>
+    <!-- Footer Note -->
+    <div class="mt-4 text-center">
+      <p class="text-[11px] text-slate-500 flex items-center justify-center space-x-2">
+        <span>Powered by Akilinova Vision</span>
+        <span>•</span>
+        <span class="flex items-center text-emerald-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span> Qdrant GCP Connected
+        </span>
+      </p>
+    </div>
   </div>
+
+  <script>
+    function togglePassVisibility() {
+      const p = document.getElementById('passInput');
+      const icon = document.getElementById('passIcon');
+      if (p.type === 'password') {
+        p.type = 'text';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      } else {
+        p.type = 'password';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      }
+    }
+  </script>
 </body>
 </html>"""
 
@@ -69,9 +165,13 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aiota Enterprise | Video Intelligence Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
@@ -84,7 +184,10 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
     <div class="flex items-center space-x-6">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-lg border border-sky-500/30">
-          <i class="fa-solid fa-eye text-sm"></i>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
         </div>
         <span class="font-extrabold text-base tracking-wider text-white">AIOTA</span>
         <span class="text-[10px] font-semibold tracking-wider text-sky-400 bg-sky-950/80 border border-sky-800/60 px-2 py-0.5 rounded uppercase">Enterprise</span>
@@ -591,23 +694,32 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
 </body>
 </html>"""
 
+def favicon_view(request):
+    return HttpResponse(FAVICON_SVG, content_type='image/svg+xml')
+
 @csrf_exempt
 def login_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/')
 
+    error_block = ""
     if request.method == 'POST':
-        u = request.POST.get('username')
-        p = request.POST.get('password')
+        u = (request.POST.get('username') or '').strip()
+        p = (request.POST.get('password') or '').strip()
         user = authenticate(request, username=u, password=p)
         if user is not None:
             login(request, user)
             return HttpResponseRedirect('/')
         else:
-            err_html = LOGIN_HTML.replace('class="hidden bg-red-950', 'class="block bg-red-950').replace('</div>', 'Invalid credentials. Please verify username and password.</div>', 1)
-            return HttpResponse(err_html)
+            error_block = """
+            <div class="bg-red-950/80 border border-red-800/80 text-red-200 text-xs px-3.5 py-2.5 rounded-xl flex items-center space-x-2">
+              <i class="fa-solid fa-circle-exclamation text-red-400 text-sm"></i>
+              <span>Invalid username or password. Please verify credentials.</span>
+            </div>
+            """
 
-    return HttpResponse(LOGIN_HTML)
+    page = LOGIN_HTML_TEMPLATE.replace('{ERROR_MESSAGE_BLOCK}', error_block)
+    return HttpResponse(page)
 
 def logout_view(request):
     logout(request)
@@ -630,6 +742,7 @@ def home_view(request):
 
 urlpatterns = [
     path('api/', api.urls),
+    path('favicon.ico', favicon_view),
     path('login', login_view),
     path('logout', logout_view),
     path('api/demo-cameras', get_demo_cameras_api),
