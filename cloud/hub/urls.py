@@ -284,17 +284,20 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
 
           <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
             <span class="text-slate-500 font-medium shrink-0">Quick Queries:</span>
-            <button onclick="quickSearch('intruder person near gate')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
-              🚨 Perimeter Intruder
+            <button onclick="quickSearch('highway traffic cars vehicle')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sky-300 border border-slate-700/60 shrink-0 transition">
+              🚗 Highway Traffic (Mombasa Rd)
             </button>
-            <button onclick="quickSearch('coyote predator near pasture')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
-              🐺 Predator / Rustling
+            <button onclick="quickSearch('pedestrians crosswalk cyclist bicycle')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-slate-700/60 shrink-0 transition">
+              🚶 Crosswalk & Cyclists
             </button>
-            <button onclick="quickSearch('tractor vehicle in feedlot')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
-              🚜 Farm Vehicles
+            <button onclick="quickSearch('horses livestock farm animals pasture')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-slate-700/60 shrink-0 transition">
+              🐎 Livestock at Fence (Ranch)
             </button>
-            <button onclick="quickSearch('stray dog fence')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
-              🐕 Stray Animal
+            <button onclick="quickSearch('retail store cashier till checkout queue')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-purple-300 border border-slate-700/60 shrink-0 transition">
+              🛍️ Retail Checkout & Till
+            </button>
+            <button onclick="quickSearch('vehicle parking lot parked cars')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
+              🅿️ Facility Parking Yard
             </button>
           </div>
         </div>
@@ -823,17 +826,17 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
 
     // CAMERA WALL STREAM CONTROLLER
     const DEMO_PRESET = [
-      { id: 0, title: 'CAM-01: North Perimeter Main Gate', tag: 'RTSP-MAIN-01', res: '1080p @ 15fps', url: '/media/gate_security.mp4', badge: 'LIVE LOOP' },
-      { id: 1, title: 'CAM-02: Commercial Perimeter Walkway', tag: 'RTSP-SUB-02', res: '1080p @ 15fps', url: '/media/pedestrian_walkway.mp4', badge: 'LIVE LOOP' },
-      { id: 2, title: 'CAM-03: Greenhouse Packhouse Access', tag: 'RTSP-SUB-03', res: '1080p @ 15fps', url: '/media/greenhouse_access.mp4', badge: 'LIVE LOOP' },
-      { id: 3, title: 'CAM-04: Fuel Depot & Machinery Yard', tag: 'RTSP-SUB-04', res: '1080p @ 15fps', url: '/media/machinery_yard.mp4', badge: 'LIVE LOOP' }
+      { id: 0, title: 'CAM-01: Mombasa Road Highway Access', tag: 'RTSP-HWY-01', res: '1080p @ 30fps', url: '/media/clip_highway_traffic.mp4', badge: 'LIVE CCTV' },
+      { id: 1, title: 'CAM-02: Commercial Turnstile & Crosswalk', tag: 'RTSP-XWALK-02', res: '1080p @ 24fps', url: '/media/clip_bikes_pedestrians.mp4', badge: 'LIVE CCTV' },
+      { id: 2, title: 'CAM-03: Naivasha Flower Ranch Pasture', tag: 'RTSP-RANCH-03', res: '1080p @ 30fps', url: '/media/clip_farm_livestock.mp4', badge: 'LIVE CCTV' },
+      { id: 3, title: 'CAM-04: Retail Store & Forecourt Till', tag: 'RTSP-RETAIL-04', res: '720p @ 15fps', url: '/media/clip_retail_checkout.mp4', badge: 'LIVE CCTV' }
     ];
 
     const PUBLIC_PRESET = [
-      { id: 0, title: 'CAM-01: Akamai Public 24/7 Live Stream', tag: 'LIVE-HLS-01', res: 'HLS Live Feed', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', badge: 'LIVE HLS' },
-      { id: 1, title: 'CAM-02: Public Hi-Def Surveillance Test', tag: 'LIVE-PUB-02', res: '1080p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', badge: 'PUBLIC FEED' },
-      { id: 2, title: 'CAM-03: Public Perimeter Benchmark Feed', tag: 'LIVE-PUB-03', res: '720p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', badge: 'PUBLIC FEED' },
-      { id: 3, title: 'CAM-04: Public Facility Live Stream', tag: 'LIVE-PUB-04', res: '1080p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', badge: 'PUBLIC FEED' }
+      { id: 0, title: 'CAM-01: Akamai 24/7 Live HLS Stream', tag: 'LIVE-HLS-01', res: 'HLS Live Feed', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', badge: 'LIVE HLS' },
+      { id: 1, title: 'CAM-02: Public Highway Traffic Feed', tag: 'LIVE-PUB-02', res: '1080p Test', url: 'https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/Traffic.mp4', badge: 'PUBLIC STREAM' },
+      { id: 2, title: 'CAM-03: Public Pedestrians & Bikes Junction', tag: 'LIVE-PUB-03', res: '720p Test', url: 'https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/aerial_crossing_pedestrians_bikes.mp4', badge: 'PUBLIC STREAM' },
+      { id: 3, title: 'CAM-04: Public Facility Parking Yard', tag: 'LIVE-PUB-04', res: '720p Test', url: 'https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/Parking.mp4', badge: 'PUBLIC STREAM' }
     ];
 
     let currentWallPreset = 'demo';
@@ -854,7 +857,7 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
         btnDemo.className = 'px-3 py-1 rounded-lg font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 transition flex items-center space-x-1.5';
         btnPublic.className = 'px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition flex items-center space-x-1.5';
         wallTitle.innerText = 'Naivasha Flower Ranch - Live Camera Wall';
-        wallSubtitle.innerText = 'Simulated on-premise CCTV loops over WebRTC / HLS buffer';
+        wallSubtitle.innerText = 'Real on-premise surveillance loops over WebRTC / HLS buffer';
         applyPreset(DEMO_PRESET);
       } else {
         btnPublic.className = 'px-3 py-1 rounded-lg font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 transition flex items-center space-x-1.5';
@@ -945,7 +948,7 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
       closeCustomStreamModal();
     }
 
-    fetchEvents('coyote intruder dog vehicle');
+    fetchEvents('all');
     initCameraWall();
   </script>
 </body>
