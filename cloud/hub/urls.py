@@ -168,6 +168,7 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
   <link rel="icon" type="image/svg+xml" href="/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -308,34 +309,60 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
         </div>
       </section>
 
-      <!-- TAB 2: LIVE CAMERA WALL (REAL WORKING VIDEOS FOR DEMO) -->
+      <!-- TAB 2: LIVE CAMERA WALL (DEMO LOOPS & PUBLIC STREAMS) -->
       <section id="viewWall" class="flex-1 flex flex-col overflow-hidden hidden p-4">
-        <div class="flex justify-between items-center mb-3">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3 shrink-0">
           <div>
             <h2 class="text-base font-bold text-white flex items-center space-x-2">
               <i class="fa-solid fa-table-cells text-sky-400"></i>
-              <span>Naivasha Flower Ranch - Live Camera Wall</span>
+              <span id="wallTitle">Naivasha Flower Ranch - Live Camera Wall</span>
             </h2>
-            <p class="text-xs text-slate-400">Live video streaming over WebRTC / HLS local buffer</p>
+            <p class="text-xs text-slate-400" id="wallSubtitle">Live video streaming over WebRTC / HLS local buffer</p>
           </div>
-          <span class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg flex items-center">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2"></span> 4 Streams Online
-          </span>
+
+          <div class="flex items-center space-x-2">
+            <!-- Preset Switcher -->
+            <div class="bg-slate-900 border border-slate-800 p-1 rounded-xl flex items-center space-x-1 text-xs">
+              <button onclick="switchWallPreset('demo')" id="btnPresetDemo" class="px-3 py-1 rounded-lg font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-shield-halved text-[11px]"></i>
+                <span>Demo CCTV Loops</span>
+              </button>
+              <button onclick="switchWallPreset('public')" id="btnPresetPublic" class="px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-globe text-[11px]"></i>
+                <span>Public Live Streams</span>
+              </button>
+            </div>
+
+            <!-- Custom Stream Config Button -->
+            <button onclick="openCustomStreamModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-700 text-slate-200 transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-sliders text-sky-400"></i>
+              <span>Test Stream URL</span>
+            </button>
+
+            <span class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1.5 rounded-xl flex items-center">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2"></span> 4 Streams Active
+            </span>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto" id="cameraWallGrid">
           <!-- Cam 1 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-01: North Perimeter Main Gate</span>
-              <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
+              <span class="text-slate-200" id="camTitle0"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-01: North Perimeter Main Gate</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="openCustomStreamModal(0)" class="text-[11px] text-slate-400 hover:text-sky-400 transition" title="Change stream">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <span class="text-[10px] text-emerald-400 font-mono" id="camRes0">1080p @ 15fps</span>
+              </div>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="/media/gate_security.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
+              <video id="camVideo0" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg" id="camBadge0">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
               </div>
-              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono" id="camTag0">
                 RTSP-MAIN-01
               </div>
             </div>
@@ -344,15 +371,20 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 2 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-02: Commercial Perimeter Walkway</span>
-              <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
+              <span class="text-slate-200" id="camTitle1"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-02: Commercial Perimeter Walkway</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="openCustomStreamModal(1)" class="text-[11px] text-slate-400 hover:text-sky-400 transition" title="Change stream">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <span class="text-[10px] text-emerald-400 font-mono" id="camRes1">1080p @ 15fps</span>
+              </div>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="/media/pedestrian_walkway.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
+              <video id="camVideo1" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg" id="camBadge1">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
               </div>
-              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono" id="camTag1">
                 RTSP-SUB-02
               </div>
             </div>
@@ -361,15 +393,20 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 3 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-03: Greenhouse Packhouse Access</span>
-              <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
+              <span class="text-slate-200" id="camTitle2"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-03: Greenhouse Packhouse Access</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="openCustomStreamModal(2)" class="text-[11px] text-slate-400 hover:text-sky-400 transition" title="Change stream">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <span class="text-[10px] text-emerald-400 font-mono" id="camRes2">1080p @ 15fps</span>
+              </div>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="/media/greenhouse_access.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
+              <video id="camVideo2" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg" id="camBadge2">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
               </div>
-              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono" id="camTag2">
                 RTSP-SUB-03
               </div>
             </div>
@@ -378,21 +415,96 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 4 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-04: Fuel Depot & Machinery Yard</span>
-              <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
+              <span class="text-slate-200" id="camTitle3"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-04: Fuel Depot & Machinery Yard</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="openCustomStreamModal(3)" class="text-[11px] text-slate-400 hover:text-sky-400 transition" title="Change stream">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <span class="text-[10px] text-emerald-400 font-mono" id="camRes3">1080p @ 15fps</span>
+              </div>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="/media/machinery_yard.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
+              <video id="camVideo3" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg" id="camBadge3">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
               </div>
-              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono" id="camTag3">
                 RTSP-SUB-04
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- MODAL: CUSTOM STREAM TESTER -->
+      <div id="streamModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-video text-sky-400"></i>
+              <span>Connect / Test Live CCTV Stream</span>
+            </h3>
+            <button onclick="closeCustomStreamModal()" class="text-slate-400 hover:text-white transition">
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Camera Slot</label>
+              <select id="modalCamSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-sky-500">
+                <option value="0">CAM-01 (Tile 1)</option>
+                <option value="1">CAM-02 (Tile 2)</option>
+                <option value="2">CAM-03 (Tile 3)</option>
+                <option value="3">CAM-04 (Tile 4)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Camera Name / Label</label>
+              <input type="text" id="modalCamName" placeholder="e.g. Public Traffic Cam / Warehouse Access" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Live Stream URL (HLS .m3u8, MP4, or Web Stream)</label>
+              <input type="text" id="modalCamUrl" placeholder="https://.../playlist.m3u8 or /media/...mp4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono text-[11px] focus:outline-none focus:border-sky-500">
+            </div>
+
+            <!-- Quick Presets -->
+            <div>
+              <span class="block text-slate-400 text-[11px] font-semibold mb-1.5">Quick Verified Streams:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="setModalPreset('Akamai 24/7 Live HLS Feed', 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 text-[10px]">
+                  🌐 Akamai 24/7 Live HLS
+                </button>
+                <button type="button" onclick="setModalPreset('Public HD Test Feed', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px]">
+                  🎥 Tears of Steel MP4
+                </button>
+                <button type="button" onclick="setModalPreset('Naivasha Gate CCTV Loop', '/media/gate_security.mp4')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-[10px]">
+                  🏢 Gate CCTV Loop
+                </button>
+                <button type="button" onclick="setModalPreset('Naivasha Walkway CCTV Loop', '/media/pedestrian_walkway.mp4')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-[10px]">
+                  🏢 Walkway CCTV Loop
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-[11px] text-slate-400 space-y-1">
+              <p class="font-bold text-slate-300"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Testing Real Cameras:</p>
+              <p>• <strong>Phone Camera:</strong> Use the free <em>IP Webcam</em> app (Android) or <em>RTSP Camera</em> (iOS) over Wi-Fi. Enter direct video URL: <code class="text-sky-300 font-mono">http://&lt;phone-ip&gt;:8080/video</code>.</p>
+              <p>• <strong>RTSP Streams:</strong> Browsers require HLS or WebRTC. Raw <code class="text-sky-300 font-mono">rtsp://</code> streams are ingested on the Edge Appliance ("Aiota Box") via Frigate/go2rtc.</p>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+            <button onclick="closeCustomStreamModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancel</button>
+            <button onclick="applyCustomStream()" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg transition flex items-center space-x-1.5 shadow-lg shadow-sky-600/30">
+              <i class="fa-solid fa-play text-[11px]"></i>
+              <span>Apply & Stream</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- TAB 3: ALERTS -->
       <section id="viewAlerts" class="flex-1 overflow-y-auto p-6 hidden max-w-4xl">
@@ -701,7 +813,132 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
       fetchEvents(q.trim() || 'all');
     });
 
+    // CAMERA WALL STREAM CONTROLLER
+    const DEMO_PRESET = [
+      { id: 0, title: 'CAM-01: North Perimeter Main Gate', tag: 'RTSP-MAIN-01', res: '1080p @ 15fps', url: '/media/gate_security.mp4', badge: 'LIVE LOOP' },
+      { id: 1, title: 'CAM-02: Commercial Perimeter Walkway', tag: 'RTSP-SUB-02', res: '1080p @ 15fps', url: '/media/pedestrian_walkway.mp4', badge: 'LIVE LOOP' },
+      { id: 2, title: 'CAM-03: Greenhouse Packhouse Access', tag: 'RTSP-SUB-03', res: '1080p @ 15fps', url: '/media/greenhouse_access.mp4', badge: 'LIVE LOOP' },
+      { id: 3, title: 'CAM-04: Fuel Depot & Machinery Yard', tag: 'RTSP-SUB-04', res: '1080p @ 15fps', url: '/media/machinery_yard.mp4', badge: 'LIVE LOOP' }
+    ];
+
+    const PUBLIC_PRESET = [
+      { id: 0, title: 'CAM-01: Akamai Public 24/7 Live Stream', tag: 'LIVE-HLS-01', res: 'HLS Live Feed', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', badge: 'LIVE HLS' },
+      { id: 1, title: 'CAM-02: Public Hi-Def Surveillance Test', tag: 'LIVE-PUB-02', res: '1080p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', badge: 'PUBLIC FEED' },
+      { id: 2, title: 'CAM-03: Public Perimeter Benchmark Feed', tag: 'LIVE-PUB-03', res: '720p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', badge: 'PUBLIC FEED' },
+      { id: 3, title: 'CAM-04: Public Facility Live Stream', tag: 'LIVE-PUB-04', res: '1080p Test', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', badge: 'PUBLIC FEED' }
+    ];
+
+    let currentWallPreset = 'demo';
+    const hlsInstances = {};
+
+    function initCameraWall() {
+      applyPreset(DEMO_PRESET);
+    }
+
+    function switchWallPreset(preset) {
+      currentWallPreset = preset;
+      const btnDemo = document.getElementById('btnPresetDemo');
+      const btnPublic = document.getElementById('btnPresetPublic');
+      const wallTitle = document.getElementById('wallTitle');
+      const wallSubtitle = document.getElementById('wallSubtitle');
+
+      if (preset === 'demo') {
+        btnDemo.className = 'px-3 py-1 rounded-lg font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 transition flex items-center space-x-1.5';
+        btnPublic.className = 'px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition flex items-center space-x-1.5';
+        wallTitle.innerText = 'Naivasha Flower Ranch - Live Camera Wall';
+        wallSubtitle.innerText = 'Simulated on-premise CCTV loops over WebRTC / HLS buffer';
+        applyPreset(DEMO_PRESET);
+      } else {
+        btnPublic.className = 'px-3 py-1 rounded-lg font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 transition flex items-center space-x-1.5';
+        btnDemo.className = 'px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition flex items-center space-x-1.5';
+        wallTitle.innerText = 'Public Live CCTV & HLS Streams';
+        wallSubtitle.innerText = 'Testing live external HLS & surveillance feeds from open internet';
+        applyPreset(PUBLIC_PRESET);
+      }
+    }
+
+    function applyPreset(presetArray) {
+      presetArray.forEach(cfg => {
+        playCameraTile(cfg.id, cfg.url, cfg.title, cfg.tag, cfg.res, cfg.badge);
+      });
+    }
+
+    function playCameraTile(camIndex, url, title, tag, res, badge) {
+      if (title) document.getElementById('camTitle' + camIndex).innerHTML = `<i class="fa-solid fa-camera mr-1 text-sky-400"></i>${title}`;
+      if (tag) document.getElementById('camTag' + camIndex).innerText = tag;
+      if (res) document.getElementById('camRes' + camIndex).innerText = res;
+      if (badge) document.getElementById('camBadge' + camIndex).innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> ${badge}`;
+
+      const video = document.getElementById('camVideo' + camIndex);
+      if (!video) return;
+
+      if (hlsInstances[camIndex]) {
+        hlsInstances[camIndex].destroy();
+        delete hlsInstances[camIndex];
+      }
+
+      if (url.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hlsInstances[camIndex] = hls;
+          hls.on(Hls.Events.MANIFEST_PARSED, function() {
+            video.muted = true;
+            video.play().catch(e => console.log('Autoplay info:', e));
+          });
+          hls.on(Hls.Events.ERROR, function(event, data) {
+            if (data.fatal) {
+              console.warn('HLS fatal error on cam', camIndex, data);
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = url;
+          video.muted = true;
+          video.play().catch(e => console.log('Autoplay info:', e));
+        }
+      } else {
+        video.src = url;
+        video.muted = true;
+        video.play().catch(e => console.log('Autoplay info:', e));
+      }
+    }
+
+    function openCustomStreamModal(slot = 0) {
+      document.getElementById('modalCamSelect').value = slot;
+      const currentTitle = document.getElementById('camTitle' + slot).innerText.trim();
+      const currentVideo = document.getElementById('camVideo' + slot);
+      document.getElementById('modalCamName').value = currentTitle;
+      document.getElementById('modalCamUrl').value = currentVideo.src || '';
+      document.getElementById('streamModal').classList.remove('hidden');
+    }
+
+    function closeCustomStreamModal() {
+      document.getElementById('streamModal').classList.add('hidden');
+    }
+
+    function setModalPreset(name, url) {
+      document.getElementById('modalCamName').value = name;
+      document.getElementById('modalCamUrl').value = url;
+    }
+
+    function applyCustomStream() {
+      const slot = parseInt(document.getElementById('modalCamSelect').value, 10);
+      const name = document.getElementById('modalCamName').value.trim() || `Custom Stream CAM-0${slot + 1}`;
+      const url = document.getElementById('modalCamUrl').value.trim();
+
+      if (!url) {
+        alert('Please enter a valid Stream URL (e.g. .m3u8 or .mp4 or HTTP feed)');
+        return;
+      }
+
+      const isHls = url.includes('.m3u8');
+      playCameraTile(slot, url, name, 'CUSTOM-0' + (slot + 1), isHls ? 'HLS Stream' : 'Live Feed', isHls ? 'LIVE HLS' : 'CUSTOM FEED');
+      closeCustomStreamModal();
+    }
+
     fetchEvents('coyote intruder dog vehicle');
+    initCameraWall();
   </script>
 </body>
 </html>"""
