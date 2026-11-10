@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  # 1. Local MQTT Message Broker (Frigate Event Bus)
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: aiota_mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    environment:
+      - TZ=Africa/Nairobi
+
+  # 2. Frigate Local NVR (Intel VA-API / OpenVINO Accelerated)
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    container_name: aiota_frigate
+    restart: unless-stopped
+    privileged: true
+    shm_size: "256mb"
+    devices:
+      - /dev/dri:/dev/dri # Intel N100 / GPU Hardware Video Decoding & Inference
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/aiota/config.yml:/config/config.yml
+      - /data/frigate/storage:/media/frigate
+    ports:
+      - "5000:5000" # Local Web UI & Snapshot API
+      - "8554:8554" # RTSP Local Restream
+      - "8555:8555/tcp" # WebRTC Live Stream
+      - "8555:8555/udp"
+    environment:
+      - FRIGATE_RTSP_PASSWORD=aiota_local_edge_pass
+      - TZ=Africa/Nairobi
+
+  # 3. Aiota Core Edge Sync Daemon & Auto-Discovery Appliance
+  appliance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aiota_appliance
+    restart: unless-stopped
+    network_mode: "host" # Required for ONVIF WS-Discovery UDP broadcast
+    volumes:
+      - /etc/aiota:/etc/aiota
+      - /data/frigate/storage:/media/frigate
+    environment:
+      - CLOUD_API_URL=https://aiota.akilinova.co.ke/api
+      - APPLIANCE_TOKEN=akilinova_edge_secret_token_12345
+      - FRIGATE_API_URL=http://127.0.0.1:5000
+      - MQTT_HOST=127.0.0.1
+      - MQTT_PORT=1883
+      - MAX_RATE_KBPS=50 # 50 KB/s daytime bandwidth cap
+      - OFF_PEAK_START=0 # Midnight
+      - OFF_PEAK_END=5   # 5 AM (cheap night bundles)
+      - TZ=Africa/Nairobi
