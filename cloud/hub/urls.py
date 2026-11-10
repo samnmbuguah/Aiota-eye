@@ -327,13 +327,16 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 1 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-01: North Perimeter Gate</span>
+              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-01: North Perimeter Main Gate</span>
               <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center">
+              <video src="/media/gate_security.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
+              </div>
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+                RTSP-MAIN-01
               </div>
             </div>
           </div>
@@ -341,13 +344,16 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 2 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-02: Livestock Feedlot</span>
+              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-02: Commercial Perimeter Walkway</span>
               <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center">
+              <video src="/media/pedestrian_walkway.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
+              </div>
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+                RTSP-SUB-02
               </div>
             </div>
           </div>
@@ -355,13 +361,16 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <!-- Cam 3 -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
             <div class="p-2.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-03: Greenhouse Rose Perimeter</span>
+              <span class="text-slate-200"><i class="fa-solid fa-camera mr-1 text-sky-400"></i>CAM-03: Greenhouse Packhouse Access</span>
               <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center">
+              <video src="/media/greenhouse_access.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
+              </div>
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+                RTSP-SUB-03
               </div>
             </div>
           </div>
@@ -373,9 +382,12 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
               <span class="text-[10px] text-emerald-400 font-mono">1080p @ 15fps</span>
             </div>
             <div class="flex-1 bg-black relative aspect-video flex items-center justify-center">
-              <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center">
+              <video src="/media/machinery_yard.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+              <div class="absolute bottom-2 left-2 text-[10px] bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded font-mono font-bold flex items-center shadow-lg">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5"></span> LIVE FEED
+              </div>
+              <div class="absolute top-2 right-2 text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded font-mono">
+                RTSP-SUB-04
               </div>
             </div>
           </div>
