@@ -8,6 +8,14 @@ from django.views.decorators.csrf import csrf_exempt
 from app.api.endpoints import api
 from app.core.models import Organization, OrganizationMember, Camera, DetectionEvent
 
+try:
+    from app.marketing import MARKETING_HTML
+except ImportError:
+    try:
+        from cloud.hub.marketing import MARKETING_HTML
+    except ImportError:
+        from marketing import MARKETING_HTML
+
 FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -948,8 +956,9 @@ def favicon_view(request):
 
 @csrf_exempt
 def login_view(request):
+    next_url = request.GET.get('next') or request.POST.get('next') or '/console'
     if request.user.is_authenticated:
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(next_url)
 
     error_block = ""
     if request.method == 'POST':
@@ -958,7 +967,7 @@ def login_view(request):
         user = authenticate(request, username=u, password=p)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(next_url)
         else:
             error_block = """
             <div class="bg-red-950/80 border border-red-800/80 text-red-200 text-xs px-3.5 py-2.5 rounded-xl flex items-center space-x-2">
@@ -978,9 +987,23 @@ def get_demo_cameras_api(request):
     cameras = Camera.objects.filter(is_active=True).values('id', 'name', 'identifier', 'demo_video_url')
     return JsonResponse({'cameras': list(cameras)})
 
-def home_view(request):
+def landing_view(request):
+    """Public high-converting marketing landing page for Kenya & East Africa."""
+    if request.user.is_authenticated:
+        auth_nav = (
+            f'<a href="/console" class="text-xs font-bold text-sky-400 bg-sky-950/80 border border-sky-800/80 px-3.5 py-1.5 rounded-xl hover:bg-sky-900 transition flex items-center space-x-2">'
+            f'<i class="fa-solid fa-desktop text-xs"></i><span>Console ({request.user.username})</span></a>'
+        )
+    else:
+        auth_nav = '<a href="/login" class="text-xs font-bold text-slate-300 hover:text-white px-3.5 py-1.5 rounded-xl hover:bg-slate-900 transition">Sign In</a>'
+
+    html = MARKETING_HTML.replace('{AUTH_NAV_BUTTONS}', auth_nav)
+    return HttpResponse(html)
+
+def console_view(request):
+    """Authenticated enterprise surveillance & AI intelligence console."""
     if not request.user.is_authenticated:
-        return HttpResponseRedirect('/login')
+        return HttpResponseRedirect('/login?next=/console')
 
     member = OrganizationMember.objects.filter(user=request.user).select_related('organization').first()
     org_name = member.organization.name if member else 'Akilinova Vision'
@@ -989,11 +1012,36 @@ def home_view(request):
     html = DASHBOARD_AUTH_HTML.replace('{ORG_NAME}', org_name).replace('{USERNAME}', request.user.username).replace('{ROLE}', role_label)
     return HttpResponse(html)
 
+@csrf_exempt
+def lead_capture_view(request):
+    """Captures pilot & demo requests from the marketing page."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        except Exception:
+            data = request.POST.dict()
+
+        # Log lead submission
+        log_line = f"[{request.META.get('REMOTE_ADDR')}] {data}\n"
+        log_file = getattr(settings, 'BASE_DIR', '.') / 'leads.log'
+        try:
+            with open(log_file, 'a') as f:
+                f.write(log_line)
+        except Exception:
+            pass
+
+        return JsonResponse({'status': 'ok', 'message': 'Lead received successfully'})
+    return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
+
 urlpatterns = [
     path('api/', api.urls),
     path('favicon.ico', favicon_view),
     path('login', login_view),
     path('logout', logout_view),
+    path('console', console_view),
+    path('dashboard', console_view),
+    path('app', console_view),
+    path('api/lead-capture', lead_capture_view),
     path('api/demo-cameras', get_demo_cameras_api),
-    path('', home_view),
+    path('', landing_view),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
