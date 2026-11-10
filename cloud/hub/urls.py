@@ -452,9 +452,11 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
             <div onclick="inspectEvent(${index})" class="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden hover:border-sky-500/60 hover:shadow-xl hover:shadow-sky-500/5 transition duration-200 cursor-pointer flex flex-col group">
               <div class="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
                 <img src="${snap}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                
                 <span class="absolute top-2 right-2 text-[10px] font-black px-2 py-0.5 rounded bg-sky-950/90 text-sky-300 border border-sky-800/80 shadow">
                   ${matchPercent}% match
                 </span>
+
                 ${hasClip ? `
                   <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
                     <span class="w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition">
@@ -589,6 +591,7 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
 </body>
 </html>"""
 
+@csrf_exempt
 def login_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/')
