@@ -231,3 +231,42 @@ Dispatches an immediate verified test WhatsApp alert card with a CCTV snapshot t
 ### `GET /api/alerts/logs`
 Retrieves recent alert delivery records and statuses (`sent`, `simulated`, `failed`).
 
+---
+
+## 7. "Chat with Your Cameras" (Conversational Copilot API)
+
+### `POST /api/copilot/query`
+Natural language conversational intelligence assistant combining Qdrant Cloud vector search and Gemini 1.5 Flash reasoning to generate executive security incident briefings.
+
+#### Request Body
+```json
+{
+  "query": "Summarize all vehicle traffic and movements on Mombasa Road today",
+  "site_id": "optional-site-uuid",
+  "limit": 10
+}
+```
+
+#### Response
+```json
+{
+  "query": "Summarize all vehicle traffic and movements on Mombasa Road today",
+  "answer": "### 🛡️ Aiota Security Incident Briefing\n...",
+  "model_used": "Google Gemini 1.5 Flash",
+  "events_analyzed": 7,
+  "citations": [
+    {
+      "event_id": "72542654-b0b1-4192-83d6-47f00070fbfe",
+      "camera_name": "CAM-01: Mombasa Road Highway Access",
+      "primary_label": "vehicle",
+      "confidence": 94,
+      "time_eat": "Nov 11, 2026 at 10:29 AM EAT",
+      "zone": "Main_Highway_Access",
+      "snapshot_url": "/media/snap_highway_traffic.jpg",
+      "clip_url": "/media/clip_highway_traffic.mp4"
+    }
+  ]
+}
+```
+
+

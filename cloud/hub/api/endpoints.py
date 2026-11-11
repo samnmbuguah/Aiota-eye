@@ -24,6 +24,14 @@ except ImportError:
     except ImportError:
         from app.alert_dispatcher import evaluate_and_dispatch_event_alerts, send_test_alert
 
+try:
+    from hub.tasks.copilot import query_copilot
+except ImportError:
+    try:
+        from app.tasks.copilot import query_copilot
+    except ImportError:
+        from app.copilot import query_copilot
+
 
 api = NinjaAPI(title='Aiota Edge Video Intelligence API', version='1.0.0')
 
@@ -363,3 +371,30 @@ def list_alert_logs(request, limit: int = 20):
             'click_to_chat_url': l.provider_response.get('click_to_chat_url', '') if isinstance(l.provider_response, dict) else '',
         })
     return out
+
+class CopilotQuerySchema(Schema):
+    query: str
+    site_id: Optional[str] = None
+    limit: Optional[int] = 10
+
+class CopilotCitationSchema(Schema):
+    event_id: str
+    camera_name: str
+    primary_label: str
+    confidence: int
+    time_eat: str
+    zone: str
+    snapshot_url: str
+    clip_url: Optional[str] = ''
+
+class CopilotResponseSchema(Schema):
+    query: str
+    answer: str
+    model_used: str
+    events_analyzed: int
+    citations: List[CopilotCitationSchema]
+
+@api.post('/copilot/query', response=CopilotResponseSchema)
+def copilot_query_endpoint(request, body: CopilotQuerySchema):
+    return query_copilot(body.query, body.site_id, body.limit or 10)
+

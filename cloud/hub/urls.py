@@ -238,6 +238,12 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
           <span class="hidden md:inline">Neural Search</span>
         </button>
 
+        <button onclick="setTab('copilot')" id="tabBtnCopilot" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 text-xs font-semibold transition group">
+          <i class="fa-solid fa-wand-magic-sparkles text-sm text-purple-400 group-hover:text-purple-300"></i>
+          <span class="hidden md:inline">AI Copilot</span>
+          <span class="hidden md:inline-block ml-auto text-[9px] bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.2 rounded font-bold">GEMINI</span>
+        </button>
+
         <button onclick="setTab('wall')" id="tabBtnWall" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 text-xs font-semibold transition">
           <i class="fa-solid fa-table-cells text-sm"></i>
           <span class="hidden md:inline">Camera Wall (Live)</span>
@@ -674,6 +680,83 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
         </div>
       </section>
 
+      <!-- TAB 5: AI COPILOT CHAT -->
+      <section id="viewCopilot" class="flex-1 overflow-y-auto p-4 md:p-6 hidden max-w-5xl flex flex-col justify-between">
+        <div class="space-y-4">
+          <!-- Copilot Header -->
+          <div class="bg-gradient-to-r from-purple-950/40 via-slate-900 to-sky-950/30 border border-purple-500/30 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="text-[10px] font-bold tracking-wider uppercase text-purple-300 bg-purple-950/80 border border-purple-800 px-2 py-0.5 rounded flex items-center space-x-1">
+                  <i class="fa-solid fa-sparkles text-xs"></i>
+                  <span>Multimodal Reasoning Engine</span>
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">Qdrant Cloud + Gemini 1.5 Flash</span>
+              </div>
+              <h2 class="text-xl font-bold text-white mt-1.5 flex items-center space-x-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
+                <span>Aiota Security Copilot</span>
+              </h2>
+              <p class="text-xs text-slate-300 mt-1">Ask conversational intelligence questions in plain English across all 4 cameras and 24-hour event timelines.</p>
+            </div>
+            <div class="flex items-center space-x-2 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-xl">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs text-slate-300 font-mono">Copilot Online</span>
+            </div>
+          </div>
+
+          <!-- Suggested Quick Queries -->
+          <div>
+            <span class="text-[11px] font-semibold text-slate-400 block mb-2">Recommended Security Prompts:</span>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="askCopilot('Summarize all vehicle traffic and movements on Mombasa Road today')" class="text-xs bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800 hover:border-sky-500/50 px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-car text-[10px]"></i>
+                <span>Vehicle traffic on Mombasa Road</span>
+              </button>
+              <button onclick="askCopilot('Did any livestock or horses breach the pasture fence at Naivasha Ranch?')" class="text-xs bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800 hover:border-emerald-500/50 px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-shield-cat text-[10px]"></i>
+                <span>Livestock near perimeter fence</span>
+              </button>
+              <button onclick="askCopilot('Analyze customer foot traffic and checkout cashier queues at the retail store')" class="text-xs bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-cash-register text-[10px]"></i>
+                <span>Retail store checkout & queues</span>
+              </button>
+              <button onclick="askCopilot('Generate a comprehensive 24-hour security shift report across all cameras')" class="text-xs bg-slate-900 hover:bg-slate-800 text-purple-300 border border-slate-800 hover:border-purple-500/50 px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-clipboard-check text-[10px]"></i>
+                <span>24-Hour security shift report</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Copilot Thread / Output Container -->
+          <div id="copilotThread" class="space-y-4">
+            <!-- Initial Greeting Card -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 text-xs text-slate-300 space-y-2">
+              <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <span class="font-bold text-white text-sm">Aiota Copilot Ready</span>
+                <span class="text-[10px] text-slate-500 font-mono">Standby</span>
+              </div>
+              <p>Welcome, Security Officer. I can analyze and cross-reference video detection telemetry from all on-premise cameras in real time.</p>
+              <p class="text-slate-400">Click any of the recommended prompts above or ask your own question below to generate an executive intelligence briefing with verified video citations.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="sticky bottom-0 pt-4 bg-slate-950/80 backdrop-blur-md">
+          <form onsubmit="handleCopilotSubmit(event)" class="relative flex items-center">
+            <input type="text" id="copilotInput" placeholder="Ask anything: e.g. 'Did any delivery trucks enter after 10 PM?'" class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-4 pr-28 py-3 text-xs text-white focus:outline-none focus:border-purple-500 shadow-xl transition" />
+            <button type="submit" id="btnCopilotSend" class="absolute right-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-1.5">
+              <span>Ask AI</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+
     </main>
 
     <!-- RIGHT INSPECTOR DRAWER -->
@@ -743,19 +826,24 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
     let activeEvent = null;
 
     function setTab(tab) {
-      ['search', 'wall', 'alerts', 'appliances'].forEach(t => {
-        document.getElementById('view' + capitalize(t)).classList.add('hidden');
-        document.getElementById('tabBtn' + capitalize(t)).className = 
-          'w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 text-xs font-semibold transition';
+      ['search', 'copilot', 'wall', 'alerts', 'appliances'].forEach(t => {
+        const el = document.getElementById('view' + capitalize(t));
+        const btn = document.getElementById('tabBtn' + capitalize(t));
+        if (el) el.classList.add('hidden');
+        if (btn) btn.className = 'w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 text-xs font-semibold transition';
       });
 
-      document.getElementById('view' + capitalize(tab)).classList.remove('hidden');
-      document.getElementById('tabBtn' + capitalize(tab)).className = 
-        'w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sky-400 bg-sky-500/10 border border-sky-500/20 text-xs font-semibold transition';
+      const activeEl = document.getElementById('view' + capitalize(tab));
+      const activeBtn = document.getElementById('tabBtn' + capitalize(tab));
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) activeBtn.className = 'w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sky-400 bg-sky-500/10 border border-sky-500/20 text-xs font-semibold transition';
 
       if (tab === 'alerts') {
         loadAlertRules();
         loadAlertLogs();
+      } else if (tab === 'copilot') {
+        const inp = document.getElementById('copilotInput');
+        if (inp) inp.focus();
       }
     }
 
@@ -1220,6 +1308,198 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
         btn.disabled = false;
         btn.innerText = 'Save & Activate';
       }
+    }
+
+    // AI COPILOT CHAT CONTROLLER
+    let copilotHistory = [];
+
+    function askCopilot(query) {
+      setTab('copilot');
+      const input = document.getElementById('copilotInput');
+      if (input) {
+        input.value = query;
+        handleCopilotSubmit(new Event('submit'));
+      }
+    }
+
+    async function handleCopilotSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const input = document.getElementById('copilotInput');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const thread = document.getElementById('copilotThread');
+      const btn = document.getElementById('btnCopilotSend');
+
+      // Append user bubble
+      const userBubbleId = 'usr_' + Date.now();
+      thread.innerHTML += `
+        <div id="${userBubbleId}" class="flex justify-end">
+          <div class="bg-gradient-to-r from-sky-600 to-purple-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-lg shadow-lg text-xs font-medium">
+            <p>${escapeHtml(query)}</p>
+          </div>
+        </div>
+      `;
+
+      // Append thinking card
+      const loadingId = 'loading_' + Date.now();
+      thread.innerHTML += `
+        <div id="${loadingId}" class="bg-slate-900 border border-purple-500/30 rounded-2xl p-4 flex items-center space-x-3 text-xs text-purple-300 shadow-xl">
+          <i class="fa-solid fa-spinner fa-spin text-purple-400 text-base"></i>
+          <div>
+            <span class="font-bold text-white">Analyzing Surveillance Streams...</span>
+            <p class="text-[11px] text-slate-400 mt-0.5">Searching Qdrant vector memory and synthesizing Gemini 1.5 Flash incident briefing</p>
+          </div>
+        </div>
+      `;
+
+      input.value = '';
+      btn.disabled = true;
+      thread.scrollTop = thread.scrollHeight;
+
+      try {
+        const res = await fetch('/api/copilot/query', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ query: query, limit: 10 })
+        });
+        const data = await res.json();
+
+        const loadEl = document.getElementById(loadingId);
+        if (loadEl) loadEl.remove();
+
+        renderCopilotResponse(query, data);
+      } catch (err) {
+        const loadEl = document.getElementById(loadingId);
+        if (loadEl) {
+          loadEl.className = 'bg-red-950/80 border border-red-800 text-red-200 rounded-2xl p-4 text-xs';
+          loadEl.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2 text-red-400"></i> Copilot error: ${err.message}`;
+        }
+      } finally {
+        btn.disabled = false;
+        thread.scrollTop = thread.scrollHeight;
+      }
+    }
+
+    function renderCopilotResponse(query, data) {
+      const thread = document.getElementById('copilotThread');
+      const responseId = 'res_' + Date.now();
+      const citations = data.citations || [];
+
+      // Simple markdown formatter for response
+      let formattedText = data.answer || '';
+      formattedText = formattedText
+        .replace(/### (.*?)\\n/g, '<h4 class="font-bold text-white text-sm mt-3 mb-1.5 flex items-center space-x-1.5">$1</h4>')
+        .replace(/#### (.*?)\\n/g, '<h5 class="font-semibold text-purple-300 text-xs mt-2.5 mb-1">$1</h5>')
+        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong class="text-white font-bold">$1</strong>')
+        .replace(/\\*(.*?)\\*/g, '<em class="text-slate-300">$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-slate-950 text-sky-300 px-1.5 py-0.5 rounded font-mono text-[11px] border border-slate-800">$1</code>')
+        .replace(/\\n\\n/g, '<p class="mb-2"></p>')
+        .replace(/- (.*?)\\n/g, '<li class="ml-4 list-disc text-slate-300 text-xs mb-1">$1</li>');
+
+      const citationsHtml = citations.length ? `
+        <div class="mt-4 pt-3 border-t border-slate-800/80">
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-2">Verified Event Citations & Video Replays (${citations.length})</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            ${citations.map((c, idx) => `
+              <div onclick='openCitationEvent(${JSON.stringify(c)})' class="bg-slate-950 border border-slate-800 hover:border-purple-500/60 rounded-xl p-2.5 flex items-center space-x-2.5 cursor-pointer group transition shadow">
+                <div class="relative w-14 h-11 bg-black rounded-lg overflow-hidden shrink-0">
+                  <img src="${c.snapshot_url || '/media/snap_highway_traffic.jpg'}" class="w-full h-full object-cover group-hover:scale-105 transition" />
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <i class="fa-solid fa-play text-[10px] text-white"></i>
+                  </div>
+                </div>
+                <div class="overflow-hidden flex-1">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-white text-[11px] capitalize truncate">${c.primary_label}</span>
+                    <span class="text-[9px] font-mono text-sky-400 bg-sky-950/80 px-1 rounded">${c.confidence}%</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 truncate mt-0.5">${c.camera_name}</p>
+                  <p class="text-[9px] font-mono text-slate-500 truncate">${c.time_eat}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
+      const cleanWaText = encodeURIComponent(
+        `🛡️ *Aiota Incident Briefing*\nQuery: ${query}\n\n` +
+        (data.answer ? data.answer.replace(/[#*`]/g, '') : '') +
+        `\n\n🎥 Review in Console: https://aiota.akilinova.co.ke/console`
+      );
+
+      thread.innerHTML += `
+        <div id="${responseId}" class="bg-slate-900 border border-purple-500/30 rounded-2xl p-5 shadow-2xl space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-sky-500 text-white flex items-center justify-center shadow">
+                <i class="fa-solid fa-sparkles text-[11px]"></i>
+              </div>
+              <span class="font-bold text-white text-xs">Security Intelligence Briefing</span>
+              <span class="text-[10px] bg-purple-950/80 text-purple-300 border border-purple-800 px-2 py-0.5 rounded font-mono">${data.model_used}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-[11px] text-slate-400 font-mono">${data.events_analyzed} telemetry points</span>
+              <a href="https://wa.me/?text=${cleanWaText}" target="_blank" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 rounded-lg text-[10px] font-semibold transition flex items-center space-x-1">
+                <i class="fa-brands fa-whatsapp"></i><span>Share</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-300 leading-relaxed space-y-1">
+            ${formattedText}
+          </div>
+
+          ${citationsHtml}
+        </div>
+      `;
+    }
+
+    function openCitationEvent(citation) {
+      activeEvent = {
+        primary_label: citation.primary_label,
+        confidence: citation.confidence / 100,
+        score: 0.95,
+        camera_name: citation.camera_name,
+        zones: [citation.zone],
+        started_at: citation.time_eat,
+        snapshot_url: citation.snapshot_url,
+        clip_url: citation.clip_url,
+      };
+
+      document.getElementById('drawerLabel').innerText = citation.primary_label;
+      document.getElementById('drawerConfidence').innerText = citation.confidence + '%';
+      document.getElementById('drawerScore').innerText = '95% Citation Match';
+      document.getElementById('drawerCamera').innerText = citation.camera_name;
+      document.getElementById('drawerZone').innerText = citation.zone || 'Primary View';
+      document.getElementById('drawerTime').innerText = citation.time_eat;
+
+      const videoEl = document.getElementById('drawerVideo');
+      const imgEl = document.getElementById('drawerImg');
+      const dlBtn = document.getElementById('drawerDownload');
+
+      if (citation.clip_url) {
+        videoEl.classList.remove('hidden');
+        imgEl.classList.add('hidden');
+        videoEl.src = citation.clip_url;
+        videoEl.play();
+        dlBtn.href = citation.clip_url;
+        dlBtn.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        videoEl.pause();
+        videoEl.classList.add('hidden');
+        imgEl.classList.remove('hidden');
+        imgEl.src = citation.snapshot_url;
+        dlBtn.classList.add('opacity-50', 'pointer-events-none');
+      }
+
+      document.getElementById('inspectorDrawer').classList.remove('hidden');
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     fetchEvents('all');
