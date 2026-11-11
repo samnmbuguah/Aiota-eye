@@ -80,6 +80,37 @@ def call_gemini_api(api_key: str, prompt: str, system_prompt: str) -> Optional[s
     return None
 
 
+def call_nvidia_nim_api(api_key: str, prompt: str, system_prompt: str, model: str = "meta/llama-3.2-90b-vision-instruct") -> Optional[str]:
+    """Calls NVIDIA NIM OpenAI-compatible endpoint."""
+    url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.2,
+        "max_tokens": 1000
+    }
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            choices = data.get("choices", [])
+            if choices:
+                return choices[0].get("message", {}).get("content", "").strip()
+        else:
+            logger.warning(f"NVIDIA NIM API returned status {resp.status_code}: {resp.text[:200]}")
+    except Exception as e:
+        logger.error(f"NVIDIA NIM API request failed: {e}")
+    return None
+
+
+
 def synthesize_local_security_report(query: str, events: List[Dict[str, Any]]) -> str:
     """
     Deterministic enterprise physical security intelligence report generator
@@ -194,25 +225,34 @@ def query_copilot(query_text: str, site_id: Optional[str] = None, limit: int = 1
             'clip_url': ev.clip_path or '',
         })
 
-    # 2. Synthesize using Gemini 1.5 Flash if API key configured
+    # 2. Synthesize using NVIDIA NIM or Gemini 1.5 Flash if API key configured
+    nvidia_key = os.getenv('NVIDIA_API_KEY', getattr(settings, 'NVIDIA_API_KEY', ''))
     gemini_key = os.getenv('GEMINI_API_KEY', getattr(settings, 'GEMINI_API_KEY', ''))
     model_used = "Local Security Synthesizer"
     summary_markdown = None
 
-    if gemini_key:
-        system_prompt = (
-            "You are Aiota Copilot, an enterprise AI physical security intelligence analyst for commercial facilities in Kenya "
-            "(farms in Naivasha, freight along Mombasa Road, and retail stores in Nairobi). "
-            "Analyze the provided surveillance detection events and give a direct, professional, structured security briefing. "
-            "Always reference camera names, exact timestamps in EAT (East Africa Time), object labels, and confidence. "
-            "Assess threat levels (LOW, MEDIUM, HIGH) and provide 1-2 actionable recommendations for guards or facility managers. "
-            "Use clean Markdown with bullet points."
-        )
-        user_prompt = (
-            f"User Question: {query_text}\n\n"
-            f"Retrieved Surveillance Event Telemetry:\n{json.dumps(events_context, indent=2)}\n\n"
-            f"Please synthesize this into a clear, executive incident briefing."
-        )
+    system_prompt = (
+        "You are Aiota Copilot, an enterprise AI physical security intelligence analyst for commercial facilities in Kenya "
+        "(farms in Naivasha, freight along Mombasa Road, and retail stores in Nairobi). "
+        "Analyze the provided surveillance detection events and give a direct, professional, structured security briefing. "
+        "Always reference camera names, exact timestamps in EAT (East Africa Time), object labels, and confidence. "
+        "Assess threat levels (LOW, MEDIUM, HIGH) and provide 1-2 actionable recommendations for guards or facility managers. "
+        "Use clean Markdown with bullet points."
+    )
+    user_prompt = (
+        f"User Question: {query_text}\n\n"
+        f"Retrieved Surveillance Event Telemetry:\n{json.dumps(events_context, indent=2)}\n\n"
+        f"Please synthesize this into a clear, executive incident briefing."
+    )
+
+    if nvidia_key:
+        nvidia_model = os.getenv('NVIDIA_MODEL', getattr(settings, 'NVIDIA_MODEL', 'meta/llama-3.2-90b-vision-instruct'))
+        nvidia_response = call_nvidia_nim_api(nvidia_key, user_prompt, system_prompt, model=nvidia_model)
+        if nvidia_response:
+            summary_markdown = nvidia_response
+            model_used = f"NVIDIA NIM ({nvidia_model.split('/')[-1]})"
+
+    if not summary_markdown and gemini_key:
         gemini_response = call_gemini_api(gemini_key, user_prompt, system_prompt)
         if gemini_response:
             summary_markdown = gemini_response
