@@ -166,3 +166,68 @@ Captures enterprise pilot and hardware inquiries submitted via the marketing lan
   "message": "Thank you! Our engineering team will reach out within 2 hours."
 }
 ```
+
+---
+
+## 6. Real-Time WhatsApp & Multi-Channel Incident Alerting
+
+### `GET /api/alerts/rules`
+Retrieves all configured alert rules across connected facilities.
+
+#### Response
+```json
+[
+  {
+    "id": "2adb899d-5f2c-47f7-a9ed-ccb8e65fb98c",
+    "name": "Mombasa Road Highway Freight and Vehicle Alert",
+    "site_name": "North Pasture & Perimeter",
+    "target_labels": ["car", "truck", "vehicle"],
+    "zones": ["Main_Highway_Access"],
+    "min_confidence": 0.75,
+    "channel": "whatsapp",
+    "phone_number": "+254 722 000 000",
+    "is_active": true,
+    "created_at": "2026-11-11T07:28:09Z"
+  }
+]
+```
+
+### `POST /api/alerts/rules`
+Creates a new automated alert rule.
+
+#### Request Body
+```json
+{
+  "name": "Fuel Depot Night Unauthorized Access",
+  "target_labels": ["person", "vehicle"],
+  "min_confidence": 0.80,
+  "phone_number": "+254712345678",
+  "zones": ["Fuel_Depot_Perimeter"]
+}
+```
+
+### `POST /api/alerts/test`
+Dispatches an immediate verified test WhatsApp alert card with a CCTV snapshot to any phone number.
+
+#### Request Body
+```json
+{
+  "phone_number": "+254712345678",
+  "channel": "whatsapp"
+}
+```
+
+#### Response
+```json
+{
+  "status": "success",
+  "is_live_gateway": false,
+  "recipient": "+254712345678",
+  "click_to_chat_url": "https://wa.me/254712345678?text=...",
+  "snapshot_url": "https://aiota.akilinova.co.ke/media/snap_highway_traffic.jpg"
+}
+```
+
+### `GET /api/alerts/logs`
+Retrieves recent alert delivery records and statuses (`sent`, `simulated`, `failed`).
+

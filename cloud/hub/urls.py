@@ -518,29 +518,132 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
       </div>
 
       <!-- TAB 3: ALERTS -->
-      <section id="viewAlerts" class="flex-1 overflow-y-auto p-6 hidden max-w-4xl">
-        <h2 class="text-lg font-bold text-white mb-2">Kenya WhatsApp & SMS Incident Router</h2>
-        <p class="text-xs text-slate-400 mb-6">Dispatches instant snapshot cards to farm managers & security dispatch via WhatsApp upon verified tripwire breach.</p>
+      <section id="viewAlerts" class="flex-1 overflow-y-auto p-6 hidden max-w-5xl space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+            <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+            <span>Kenya WhatsApp & Multi-Channel Incident Router</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Dispatches instant security snapshot cards & review clips directly to farm managers and logistics supervisors upon verified detection.</p>
+        </div>
 
-        <div class="space-y-4">
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <!-- 1. LIVE TEST CONSOLE -->
+        <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-2xl p-5 shadow-xl">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center space-x-2">
-                <span class="font-bold text-sm text-white">Naivasha Night Predator Alert</span>
-                <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/60 px-2 py-0.5 rounded font-semibold">Active</span>
-              </div>
-              <p class="text-xs text-slate-400 mt-1">Triggers when <span class="text-sky-300 font-mono">coyote / hyena / intruder</span> detected in <span class="text-slate-300">gate_perimeter</span> between 19:00 - 06:00.</p>
-              <div class="text-[11px] text-slate-500 mt-2 flex items-center space-x-3">
-                <span><i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i>+254 712 *** 890 (Farm Manager)</span>
-                <span><i class="fa-solid fa-comment-sms text-sky-400 mr-1"></i>Safaricom SMS Backup</span>
+              <span class="text-[10px] font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded">Real-Time Dispatch Tester</span>
+              <h3 class="text-sm font-bold text-white mt-1.5">Test WhatsApp Incident Alert</h3>
+              <p class="text-xs text-slate-400">Enter your Kenyan Safaricom/Airtel number to receive an immediate test security alert with a live CCTV snapshot.</p>
+            </div>
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+              <input type="text" id="alertTestPhone" value="+254 722 000 000" placeholder="+254 7..." class="bg-slate-950 border border-slate-700 text-white text-xs px-3 py-2 rounded-xl focus:border-emerald-500 focus:outline-none font-mono w-48" />
+              <button onclick="triggerLiveTestAlert()" id="btnTestAlert" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center space-x-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+                <span>Send Alert</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert Test Result Output (hidden until sent) -->
+          <div id="testAlertResult" class="hidden mt-4 pt-4 border-t border-slate-800/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-slate-950/80 p-3.5 rounded-xl border border-emerald-500/20">
+            <div class="flex items-center space-x-3">
+              <img id="testAlertSnap" src="/media/snap_highway_traffic.jpg" class="w-14 h-10 object-cover rounded-lg border border-slate-700 shadow" />
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span id="testAlertStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">DISPATCHED</span>
+                  <span id="testAlertRecipient" class="text-xs font-mono text-slate-300"></span>
+                </div>
+                <p id="testAlertNote" class="text-[11px] text-slate-400 mt-0.5"></p>
               </div>
             </div>
-            <button class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 text-slate-200">
-              Edit Rule
+            <a id="testAlertWhatsAppLink" href="#" target="_blank" class="px-3.5 py-1.5 bg-emerald-700/80 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg flex items-center space-x-1.5 transition">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>Open in WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. ACTIVE ALERT RULES -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white">Configured Alert Rules</h3>
+              <p class="text-xs text-slate-400">Rules evaluated automatically on every edge detection event.</p>
+            </div>
+            <button onclick="openNewRuleModal()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-plus text-xs"></i>
+              <span>New Alert Rule</span>
             </button>
+          </div>
+
+          <div id="alertRulesList" class="space-y-3">
+            <div class="text-center py-6 text-slate-500 text-xs">Loading alert rules...</div>
+          </div>
+        </div>
+
+        <!-- 3. RECENT DISPATCH AUDIT LOG -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-white">Recent Alert Dispatch Log</h3>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3">Time</th>
+                  <th class="p-3">Rule / Trigger</th>
+                  <th class="p-3">Recipient</th>
+                  <th class="p-3">Channel</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="alertLogsTableBody" class="divide-y divide-slate-800/80 text-slate-300">
+                <tr><td colspan="6" class="p-4 text-center text-slate-500">Loading dispatch history...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
+
+      <!-- MODAL: CREATE ALERT RULE -->
+      <div id="newRuleModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-white text-base flex items-center space-x-2">
+              <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+              <span>Create WhatsApp Alert Rule</span>
+            </h3>
+            <button onclick="closeNewRuleModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Rule Name</label>
+              <input type="text" id="ruleNameInput" placeholder="e.g. Fuel Depot Unauthorized Access" class="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded-xl focus:border-sky-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Object Labels (comma separated)</label>
+              <input type="text" id="ruleLabelsInput" value="person, vehicle, car, truck" placeholder="car, truck, person, livestock" class="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded-xl font-mono focus:border-sky-500 focus:outline-none" />
+              <p class="text-[10px] text-slate-500 mt-1">Available: person, vehicle, car, truck, livestock, horse, cow, dog</p>
+            </div>
+
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Minimum Confidence: <span id="ruleConfDisplay" class="text-sky-400 font-bold">75%</span></label>
+              <input type="range" id="ruleConfSlider" min="50" max="95" value="75" oninput="document.getElementById('ruleConfDisplay').innerText = this.value + '%'" class="w-full accent-sky-400 cursor-pointer" />
+            </div>
+
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Recipient WhatsApp Phone Number</label>
+              <input type="text" id="rulePhoneInput" value="+254 722 000 000" placeholder="+254 7XX XXX XXX" class="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded-xl font-mono focus:border-emerald-500 focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+            <button onclick="closeNewRuleModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition">Cancel</button>
+            <button onclick="submitNewAlertRule()" id="btnSaveRule" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition">Save & Activate</button>
+          </div>
+        </div>
+      </div>
 
       <!-- TAB 4: APPLIANCES -->
       <section id="viewAppliances" class="flex-1 overflow-y-auto p-6 hidden max-w-4xl">
@@ -649,6 +752,11 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
       document.getElementById('view' + capitalize(tab)).classList.remove('hidden');
       document.getElementById('tabBtn' + capitalize(tab)).className = 
         'w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sky-400 bg-sky-500/10 border border-sky-500/20 text-xs font-semibold transition';
+
+      if (tab === 'alerts') {
+        loadAlertRules();
+        loadAlertLogs();
+      }
     }
 
     function capitalize(str) {
@@ -946,6 +1054,172 @@ DASHBOARD_AUTH_HTML = """<!DOCTYPE html>
       const isHls = url.includes('.m3u8');
       playCameraTile(slot, url, name, 'CUSTOM-0' + (slot + 1), isHls ? 'HLS Stream' : 'Live Feed', isHls ? 'LIVE HLS' : 'CUSTOM FEED');
       closeCustomStreamModal();
+    }
+
+    // ALERT RULES & DISPATCH CONTROLLER
+    async function loadAlertRules() {
+      const container = document.getElementById('alertRulesList');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/alerts/rules');
+        const rules = await res.json();
+        if (!rules || rules.length === 0) {
+          container.innerHTML = '<div class="text-center py-6 text-slate-500 text-xs">No active alert rules configured yet. Click "+ New Alert Rule" to add one.</div>';
+          return;
+        }
+        container.innerHTML = rules.map(r => `
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700 transition">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-sm text-white">${r.name}</span>
+                <span class="text-[10px] ${r.is_active ? 'bg-emerald-950 text-emerald-400 border-emerald-800/60' : 'bg-slate-800 text-slate-400'} border px-2 py-0.5 rounded font-semibold">${r.is_active ? 'Active' : 'Disabled'}</span>
+                <span class="text-[10px] font-mono text-sky-400 bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 rounded">&ge; ${Math.round(r.min_confidence * 100)}% conf</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Triggers when <span class="text-sky-300 font-mono">${(r.target_labels || []).join(' / ')}</span> detected across <span class="text-slate-300 font-semibold">${r.site_name}</span>.</p>
+              <div class="text-[11px] text-slate-400 mt-2 flex items-center space-x-4">
+                <span><i class="fa-brands fa-whatsapp text-emerald-400 mr-1.5"></i>${r.phone_number || 'Default Dispatch'}</span>
+                <span class="text-slate-500"><i class="fa-solid fa-clock text-[10px] mr-1"></i>24/7 Real-Time</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="quickTestRule('${r.phone_number}')" class="px-3 py-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 text-xs font-semibold rounded-lg transition flex items-center space-x-1">
+                <i class="fa-solid fa-bolt text-[10px]"></i>
+                <span>Test Ping</span>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) {
+        container.innerHTML = '<div class="text-center py-6 text-red-400 text-xs">Error loading alert rules: ' + e.message + '</div>';
+      }
+    }
+
+    async function loadAlertLogs() {
+      const tbody = document.getElementById('alertLogsTableBody');
+      if (!tbody) return;
+      try {
+        const res = await fetch('/api/alerts/logs?limit=10');
+        const logs = await res.json();
+        if (!logs || logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">No alerts dispatched yet. Send a test alert above to verify!</td></tr>';
+          return;
+        }
+        tbody.innerHTML = logs.map(l => {
+          const isSent = l.status === 'sent';
+          const isSim = l.status === 'simulated';
+          const badgeClass = isSent ? 'bg-emerald-950 text-emerald-400 border-emerald-800' :
+                             isSim ? 'bg-sky-950 text-sky-400 border-sky-800' : 'bg-red-950 text-red-400 border-red-800';
+          const badgeText = isSent ? 'SENT (LIVE)' : isSim ? 'DISPATCHED (SANDBOX)' : 'FAILED';
+          const timeStr = new Date(l.created_at).toLocaleTimeString();
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="p-3 font-mono text-[11px] text-slate-400">${timeStr}</td>
+              <td class="p-3 font-semibold text-white">${l.rule_name}</td>
+              <td class="p-3 font-mono text-slate-300">${l.recipient}</td>
+              <td class="p-3 capitalize"><i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i>${l.channel}</td>
+              <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${badgeText}</span></td>
+              <td class="p-3 text-right">
+                ${l.click_to_chat_url ? `
+                  <a href="${l.click_to_chat_url}" target="_blank" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-semibold transition inline-flex items-center space-x-1">
+                    <i class="fa-brands fa-whatsapp"></i><span>View</span>
+                  </a>
+                ` : `<span class="text-slate-600 text-[11px]">Logged</span>`}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Error loading alert logs: ' + e.message + '</td></tr>';
+      }
+    }
+
+    async function triggerLiveTestAlert() {
+      const phone = document.getElementById('alertTestPhone').value.trim();
+      const btn = document.getElementById('btnTestAlert');
+      const resultBox = document.getElementById('testAlertResult');
+      if (!phone) {
+        alert('Please enter a valid phone number (e.g. +254 7XX XXX XXX)');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Sending...';
+
+      try {
+        const res = await fetch('/api/alerts/test', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ phone_number: phone, channel: 'whatsapp' })
+        });
+        const data = await res.json();
+
+        resultBox.classList.remove('hidden');
+        document.getElementById('testAlertRecipient').innerText = data.recipient;
+        document.getElementById('testAlertNote').innerText = data.is_live_gateway ? 
+          'Dispatched live via Meta / Twilio WhatsApp gateway!' : 
+          'Security snapshot card generated! Click below to open preview in WhatsApp.';
+        document.getElementById('testAlertWhatsAppLink').href = data.click_to_chat_url;
+        document.getElementById('testAlertSnap').src = data.snapshot_url;
+
+        loadAlertLogs();
+      } catch(e) {
+        alert('Alert dispatch failed: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane text-xs mr-1"></i> Send Alert';
+      }
+    }
+
+    function quickTestRule(phone) {
+      if (phone) document.getElementById('alertTestPhone').value = phone;
+      triggerLiveTestAlert();
+    }
+
+    function openNewRuleModal() {
+      document.getElementById('newRuleModal').classList.remove('hidden');
+    }
+
+    function closeNewRuleModal() {
+      document.getElementById('newRuleModal').classList.add('hidden');
+    }
+
+    async function submitNewAlertRule() {
+      const name = document.getElementById('ruleNameInput').value.trim();
+      const labelsRaw = document.getElementById('ruleLabelsInput').value.trim();
+      const phone = document.getElementById('rulePhoneInput').value.trim();
+      const conf = parseInt(document.getElementById('ruleConfSlider').value, 10) / 100;
+
+      if (!name || !phone) {
+        alert('Please provide both Rule Name and Phone Number');
+        return;
+      }
+
+      const labels = labelsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      const btn = document.getElementById('btnSaveRule');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      try {
+        const res = await fetch('/api/alerts/rules', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            name: name,
+            target_labels: labels,
+            min_confidence: conf,
+            phone_number: phone
+          })
+        });
+        if (!res.ok) throw new Error('Server returned ' + res.status);
+        closeNewRuleModal();
+        loadAlertRules();
+      } catch(e) {
+        alert('Failed saving rule: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save & Activate';
+      }
     }
 
     fetchEvents('all');

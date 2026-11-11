@@ -136,3 +136,43 @@ class AlertRule(models.Model):
     channel_config = models.JSONField(default=dict)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def matches(self, event) -> bool:
+        if not self.is_active:
+            return False
+        if event.confidence < self.min_confidence:
+            return False
+        if self.target_labels:
+            labels_lower = [str(l).lower() for l in self.target_labels]
+            if str(event.primary_label).lower() not in labels_lower:
+                return False
+        if self.zones and event.zones_entered:
+            if not any(z in self.zones for z in event.zones_entered):
+                return False
+        return True
+
+    def __str__(self):
+        return f'{self.name} ({self.channel})'
+
+class AlertDispatchLog(models.Model):
+    class Status(models.TextChoices):
+        SENT = 'sent', _('Sent')
+        FAILED = 'failed', _('Failed')
+        SIMULATED = 'simulated', _('Simulated')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    rule = models.ForeignKey(AlertRule, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
+    event = models.ForeignKey(DetectionEvent, on_delete=models.CASCADE, null=True, blank=True, related_name='alert_logs')
+    channel = models.CharField(max_length=16, default='whatsapp')
+    recipient = models.CharField(max_length=128)
+    message_body = models.TextField()
+    snapshot_url = models.CharField(max_length=512, blank=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.SENT)
+    provider_response = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.channel} to {self.recipient} [{self.status}]'

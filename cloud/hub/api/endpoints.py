@@ -11,7 +11,19 @@ from django.http import HttpResponse
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 
-from app.core.models import EdgeAppliance, Camera, Site, Organization, DetectionEvent, AlertRule
+try:
+    from app.core.models import EdgeAppliance, Camera, Site, Organization, DetectionEvent, AlertRule, AlertDispatchLog
+except ImportError:
+    from hub.core.models import EdgeAppliance, Camera, Site, Organization, DetectionEvent, AlertRule, AlertDispatchLog
+
+try:
+    from hub.tasks.alert_dispatcher import evaluate_and_dispatch_event_alerts, send_test_alert
+except ImportError:
+    try:
+        from app.tasks.alert_dispatcher import evaluate_and_dispatch_event_alerts, send_test_alert
+    except ImportError:
+        from app.alert_dispatcher import evaluate_and_dispatch_event_alerts, send_test_alert
+
 
 api = NinjaAPI(title='Aiota Edge Video Intelligence API', version='1.0.0')
 
@@ -175,11 +187,20 @@ def ingest_event(
     event.vector_indexed = True
     event.save(update_fields=['qdrant_point_id', 'vector_indexed'])
 
+    # Evaluate real-time alert rules
+    dispatched_count = 0
+    try:
+        dispatched = evaluate_and_dispatch_event_alerts(event)
+        dispatched_count = len(dispatched) if dispatched else 0
+    except Exception as e:
+        pass
+
     return {
         'status': 'ok',
         'event_id': str(event.id),
         'created': created,
         'indexed': True,
+        'alerts_dispatched': dispatched_count,
     }
 
 @api.post('/search', response=SearchResponseSchema)
@@ -262,3 +283,83 @@ def appliance_heartbeat(request, data: HeartbeatSchema):
         'appliance_name': appliance.name,
         'cloud_time': datetime.now(timezone.utc).isoformat()
     }
+
+class CreateAlertRuleSchema(Schema):
+    name: str
+    target_labels: List[str]
+    min_confidence: float = 0.70
+    phone_number: str
+    site_id: Optional[str] = None
+    zones: Optional[List[str]] = []
+
+class TestAlertSchema(Schema):
+    phone_number: str
+    channel: Optional[str] = 'whatsapp'
+
+@api.get('/alerts/rules')
+def list_alert_rules(request):
+    rules = AlertRule.objects.select_related('site').all()
+    out = []
+    for r in rules:
+        out.append({
+            'id': str(r.id),
+            'name': r.name,
+            'site_name': r.site.name if r.site else 'All Sites',
+            'target_labels': r.target_labels,
+            'zones': r.zones,
+            'min_confidence': r.min_confidence,
+            'channel': r.channel,
+            'phone_number': r.channel_config.get('phone_number', ''),
+            'is_active': r.is_active,
+            'created_at': r.created_at.isoformat(),
+        })
+    return out
+
+@api.post('/alerts/rules')
+def create_or_update_alert_rule(request, body: CreateAlertRuleSchema):
+    site = None
+    if body.site_id:
+        site = Site.objects.filter(id=body.site_id).first()
+    if not site:
+        site = Site.objects.first()
+
+    rule = AlertRule.objects.create(
+        site=site,
+        name=body.name,
+        target_labels=body.target_labels,
+        zones=body.zones or [],
+        min_confidence=body.min_confidence,
+        channel=AlertRule.Channel.WHATSAPP,
+        channel_config={'phone_number': body.phone_number},
+        is_active=True,
+    )
+    return {
+        'status': 'created',
+        'id': str(rule.id),
+        'name': rule.name,
+        'target_labels': rule.target_labels,
+        'phone_number': body.phone_number,
+    }
+
+@api.post('/alerts/test')
+def test_whatsapp_alert_endpoint(request, body: TestAlertSchema):
+    result = send_test_alert(body.phone_number, body.channel or 'whatsapp')
+    return result
+
+@api.get('/alerts/logs')
+def list_alert_logs(request, limit: int = 20):
+    logs = AlertDispatchLog.objects.select_related('rule', 'event').all()[:limit]
+    out = []
+    for l in logs:
+        out.append({
+            'id': str(l.id),
+            'rule_name': l.rule.name if l.rule else 'Direct / Test Alert',
+            'channel': l.channel,
+            'recipient': l.recipient,
+            'status': l.status,
+            'snapshot_url': l.snapshot_url,
+            'message_preview': l.message_body[:100] + '...',
+            'created_at': l.created_at.isoformat(),
+            'click_to_chat_url': l.provider_response.get('click_to_chat_url', '') if isinstance(l.provider_response, dict) else '',
+        })
+    return out
