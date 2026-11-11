@@ -578,21 +578,27 @@ MARKETING_HTML = """<!DOCTYPE html>
         <div>
           <span class="text-xs uppercase font-bold text-slate-400">Farm / Small Site</span>
           <h3 class="text-xl font-bold text-white mt-1">Starter Tier</h3>
-          <div class="mt-4 flex items-baseline text-white">
-            <span class="text-3xl font-extrabold font-mono">KES 18,000</span>
-            <span class="text-slate-400 text-xs ml-1">/ month</span>
+          <div class="mt-4 flex flex-col">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-500 line-through font-mono">KES 18,000</span>
+              <span class="text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/80 px-2 py-0.5 rounded">SAVE 53%</span>
+            </div>
+            <div class="flex items-baseline text-white mt-1">
+              <span class="text-3xl font-extrabold font-mono text-emerald-400">KES 8,500</span>
+              <span class="text-slate-400 text-xs ml-1">/ month</span>
+            </div>
           </div>
           <p class="text-slate-400 text-xs mt-2">Ideal for retail shops, fuel stations, and small flower farm gates.</p>
 
           <ul class="mt-6 space-y-2.5 text-xs text-slate-300">
             <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>Up to 4 Cameras</li>
-            <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>Virtual AI Tripwires</li>
+            <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>Virtual AI Tripwires & Motion Alerts</li>
             <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>WhatsApp Incident Cards (1 Manager)</li>
             <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>14-Day Local Video Buffer</li>
             <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>M-Pesa STK Push Billing</li>
           </ul>
         </div>
-        <button onclick="openLeadModal('Starter Tier (KES 18,000)')" class="mt-8 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition">
+        <button onclick="openLeadModal('Starter Tier (KES 8,500)')" class="mt-8 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition">
           Choose Starter
         </button>
       </div>
@@ -605,9 +611,15 @@ MARKETING_HTML = """<!DOCTYPE html>
         <div>
           <span class="text-xs uppercase font-bold text-sky-400">Depots & Large Farms</span>
           <h3 class="text-xl font-bold text-white mt-1">Enterprise Tier</h3>
-          <div class="mt-4 flex items-baseline text-white">
-            <span class="text-3xl font-extrabold font-mono text-sky-400">KES 48,000</span>
-            <span class="text-slate-400 text-xs ml-1">/ month</span>
+          <div class="mt-4 flex flex-col">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-500 line-through font-mono">KES 48,000</span>
+              <span class="text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded">SAVE 50%</span>
+            </div>
+            <div class="flex items-baseline text-white mt-1">
+              <span class="text-3xl font-extrabold font-mono text-sky-400">KES 24,000</span>
+              <span class="text-slate-400 text-xs ml-1">/ month</span>
+            </div>
           </div>
           <p class="text-slate-400 text-xs mt-2">Comprehensive visual intelligence across multi-camera facilities.</p>
 
@@ -620,7 +632,7 @@ MARKETING_HTML = """<!DOCTYPE html>
             <li><i class="fa-solid fa-check text-sky-400 mr-2"></i>Dedicated On-Site Technician Setup</li>
           </ul>
         </div>
-        <button onclick="openLeadModal('Enterprise Tier (KES 48,000)')" class="mt-8 w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-sky-500/25 transition">
+        <button onclick="openLeadModal('Enterprise Tier (KES 24,000)')" class="mt-8 w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-sky-500/25 transition">
           Start 14-Day Enterprise Trial
         </button>
       </div>
